@@ -1,42 +1,27 @@
+"""
+    Implementation of logistic regression
+"""
 import numpy as np
 
-
-def mean_f(X):
-    X = np.array(X)
-    mean_ = np.array([1])
-    for i in range(1, X.shape[1]):
-        mean_ = np.append(mean_, np.mean(X[:,i]))
-    return mean_
-
-
-def f(X):
-    X_ = np.array(X, dtype=np.float64)
-    for i in range(len(X)):
-        X_[i] /= mean_f(X)
-    return X_
-
-
 def sigmoid(s):
+    """
+        sigmoid(s) = 1 / (1 + e^(-s))
+    """
     return 1 / (1 + np.exp(-s))
 
-
-def normalized_gradient(X, Xnorms, Y, beta, l):
+def normalize(X):
     """
-    :param X: data matrix (2 dimensional np.array)
-    :param Y: response variables (1 dimensional np.array)
-    :param beta: value of beta (1 dimensional np.array)
-    :param l: regularization parameter lambda
-    :return: normalized gradient, i.e. gradient normalized according to data
+        This function normalizes X by dividing each column by its mean
     """
-    grad = np.zeros(X.size)
-    for i in range(X.size):
-        grad[i] = Y*X[i] * (1-sigmoid(Y*(beta.T.dot(X))))/Xnorms[i]
-    return grad
+    norm_X = np.ones(X.shape[0])
+    feature_means = [np.mean(norm_X)]
+    for elem in X.T[1:]:
+        feature_means.append(np.mean(elem))
+        elem = elem / np.mean(elem)
+        norm_X = np.column_stack((norm_X, elem))
+    return norm_X, feature_means
 
-
-def gradient_descent(X, Y, epsilon=1e-6, l=1, step_size=1e-4, max_steps=10):
-    X = np.column_stack((np.ones(len(X)), X))
-    Xnorms = mean_f(X)
+def gradient_descent(X, Y, epsilon=1e-8, l=1, step_size=1e-4, max_steps=1000):
     """
     Implement gradient descent using full value of the gradient.
     :param X: data matrix (2 dimensional np.array)
@@ -48,12 +33,25 @@ def gradient_descent(X, Y, epsilon=1e-6, l=1, step_size=1e-4, max_steps=10):
     :return: value of beta (1 dimensional np.array)
     """
     beta = np.zeros(X.shape[1])
-    X = f(X)
-    for s in range(max_steps):
-        for i in range(len(X)):
-            grad = normalized_gradient(X[i],Xnorms, Y[i], beta, l)
-            beta[0] = beta[0] + grad[0]
-            for i in range(1, X.shape[1]-1):
-                beta[i] = beta[i] + (step_size) * grad[i] / X.shape[0]
-    return beta
- 
+    X, feature_means = normalize(X)
+    for _ in range(max_steps):
+        res = []
+        for j in range(1, X.shape[1]):
+            S = 0
+            for i in range(X.shape[0]):
+                temp = sigmoid(X[i].dot(beta)) - Y[i]
+                S = S + temp*X[i, j]
+            res.append((S[0] + (l / feature_means[j]**2)*beta[j])/(X.shape[0]))
+        res = np.array(res)
+        res0 = 0
+        S = 0
+        for i in range(X.shape[0]):
+            temp = sigmoid(X[i].dot(beta)) - Y[i]
+            S = S + temp*X[i, 0]
+        res0 = S[0] /(X.shape[0])
+        new_beta_zero = beta[0] - step_size * res0
+        new_beta = np.array([new_beta_zero, *(beta[1:] - step_size * res)])
+        if sum((beta - new_beta)**2) < (sum(beta**2) * epsilon):
+            return new_beta, np.array(feature_means)
+        beta = new_beta
+    return beta, np.array(feature_means)

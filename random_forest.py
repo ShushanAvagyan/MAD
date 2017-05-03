@@ -6,7 +6,6 @@ import numpy as np
 class RandomForest(object):
     """
     RandomForest a class, that represents Random Forests.
-
     :param num_trees: Number of trees in the random forest
     :param max_tree_depth: maximum depth for each of the trees in the forest.
     :param ratio_per_tree: ratio of points to use to train each of
