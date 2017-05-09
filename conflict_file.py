@@ -1,1 +1,1 @@
-"Hello from A"
+"added by B"
