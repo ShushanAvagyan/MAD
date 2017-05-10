@@ -7,10 +7,9 @@ import sys
 DESCRIPTION = 'csvtail - prints header and last lines of input.'
 EXAMPLES = 'example: cat file.csv | csvtail -n -100 skip first 100 rows and print file.csv till the end.'
 
-def main():
-    args = parse_args()
+def main(args):
     input_stream = open(args.file, 'r') if args.file else sys.stdin
-    output_stream = open(args.output_file, 'r') if args.output_file else sys.stdout
+    output_stream = open(args.output_file, 'w') if args.output_file else sys.stdout
 
     output_stream.write(input_stream.readline())
     if args.rows_count < 0:
@@ -43,4 +42,5 @@ def parse_args():
 
     return args
 
-main()
+if __name__ == '__main__':
+    main(parse_args())
