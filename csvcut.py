@@ -67,8 +67,7 @@ def main(args):
         col_indices = [i for i in range(len(all_columns)) if i not in col_indices]
 
     print_row(col_indices, all_columns, output_stream)
-    lines = input_stream.readlines()
-    for line in lines:
+    for line in input_stream:
         row = line.strip().split(args.separator)
         print_row(col_indices, row, output_stream)
 
