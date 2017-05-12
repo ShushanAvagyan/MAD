@@ -17,15 +17,15 @@ def get_columns_indices(fields, all_columns):
     """Returns indices of specified columns"""
     indices = []
     for col_name in fields:
-        if col_name.isdigit():
+        if col_name.isdigit() and col_name not in all_columns:
             col_name = all_columns[int(col_name)]
 
         if '-' in col_name:
             start = col_name[:col_name.index('-')]
             end = col_name[col_name.index('-')+1:]
-            if start.isdigit():
+            if start.isdigit() and start not in all_columns:
                 start = all_columns[int(start)]
-            if end.isdigit():
+            if end.isdigit() and end not in all_columns:
                 end = all_columns[int(end)]
             if not start:
                 for elem in range(all_columns.index(end)+1):
@@ -57,7 +57,11 @@ def main(args):
     all_columns = input_stream.readline().strip().split(args.separator)
     fields = args.fields.strip().split(',')
     if args.unique:
-        fields = list(set(fields))
+        unique_fields = []
+        for elem in fields:
+            if elem not in unique_fields:
+                unique_fields.append(elem)
+        fields = unique_fields
     col_indices = get_columns_indices(fields, all_columns)
     if args.complement:
         col_indices = [i for i in range(len(all_columns)) if i not in col_indices]
